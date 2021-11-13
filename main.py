@@ -8,8 +8,9 @@ import sys  # 系统模块，获得命令行参数
 from PyQt5.QtWidgets import QApplication, \
     QMainWindow  # , QWidget, QLabel, QFormLayout  # 导入QAppliaction，QLabel以及QWidget
 from PyQt5 import QtCore, QtWidgets  # ,QtGui
+from new_run import Ui_Form
 
-
+"""
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
@@ -44,7 +45,7 @@ class Ui_Form(object):
         self.label_3.setText(_translate("Form", "120km"))
         self.query.setText(_translate("Form", "查询"))
         self.runrun.setText(_translate("Form", "一键跑步"))
-
+"""
 
 """
     做一个循环，一次性跑完X天的，从9.21开始跑,跑到当天？
@@ -163,7 +164,11 @@ class FakeData():
 
     def post_data(self):
         print("start upload")
-        rep = requests.post(url=url, headers=self.headers, data=self.data)
+        try:
+            rep = requests.post(url=url, headers=self.headers, data=self.data, timeout=1)
+        except:
+            print("跑步失败")
+
         # print(rep.content)
 
     def loop_run(self, num=41):
@@ -180,8 +185,9 @@ class FakeData():
             self.makedata()
             self.compressdata()
             self.post_data()
-            for i in range(4):
-                for j in range(50000000):
+            w.progressBar.setValue(int(3 * i))
+            for j in range(4):
+                for k in range(50000000):
                     pass
 
     def set_user(self, user_stuno='2019339900028'):
@@ -233,6 +239,7 @@ def qqdata():
         for i in range(len(qcur_dis)):
             sum += float(qcur_dis[i])
     w.label_3.setText(str(sum) + 'km')
+    w.progressBar.setValue(min(int(sum), 120))
 
 
 def qrun():
@@ -248,7 +255,7 @@ if __name__ == '__main__':
     mainw.setFixedSize(mainw.width(), mainw.height())
     w.query.clicked.connect(lambda: qqdata())
     w.runrun.clicked.connect(lambda: qrun())
+    w.progressBar.setRange(0, 120)
     w.label_3.clear()
     mainw.show()
     app.exec()
-
