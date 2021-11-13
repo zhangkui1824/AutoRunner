@@ -159,51 +159,32 @@ class FakeData():
 
     def query_data(self):
         query_url = 'http://10.11.246.182:8029/DragonFlyServ/Api/webserver/getRunDataSummary'
-
-        qdata = gzip.compress(
-            "{'studentno':'2019339900028','uid':''}".encode(
-                "utf-8"), compresslevel=6)
-
-        userinfo = "{" + "'studentno':'{}',".format(w.lineEdit.text()) + "'uid':''"
-        print(w.lineEdit.text())
-        self.headers["Content-Length"] = str(len(qdata))
-        rep = requests.post(url=query_url, headers=self.headers, data=qdata)
-        self.cur_dis = str(re.search('\d\d.\d', str(rep.content)).group())
-        w.label_3.setText(self.cur_dis)
-        return self.cur_dis
+        qheaderss = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Connection": "Keep-Alive",
+            "Charset": "UTF-8",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; M2012K10C Build/RP1A.200720.011)",
+            "Host": "10.11.246.182:8029",
+            "Accept-Encoding": "gzip",
+            "Content-Length": "{}"
+        }
+        qdataa = gzip.compress(("{'studentno':'" + (w.lineEdit.text()) + "','uid':''}").encode("utf-8"),
+                               compresslevel=6)
+        qheaderss["Content-Length"] = str(len(qdataa))
+        rep = requests.post(url=query_url, headers=qheaderss, data=qdataa)
+        qcur_dis = re.findall('[:](\d+[.]\d*)', str(rep.content))
+        sum = 0
+        if len(qcur_dis) == 0:
+            sum = 0
+        else:
+            for i in range(len(qcur_dis)):
+                sum += float(qcur_dis[i])
+        w.label_3.setText(str(sum) + 'km')
+        w.progressBar.setValue(min(int(sum), 120))
 
 
 def qset_user(user_stuno='2019339900028'):
     run.studentno = "'studentno':'{}',".format(w.lineEdit.text())
-
-
-def qqdata():
-    query_urll = 'http://10.11.246.182:8029/DragonFlyServ/Api/webserver/getRunDataSummary'
-    qheaderss = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Connection": "Keep-Alive",
-        "Charset": "UTF-8",
-        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; M2012K10C Build/RP1A.200720.011)",
-        "Host": "10.11.246.182:8029",
-        "Accept-Encoding": "gzip",
-        "Content-Length": "{}"
-    }
-    qdataa = gzip.compress(("{'studentno':'" + (w.lineEdit.text()) + "','uid':''}").encode("utf-8"), compresslevel=6)
-    qheaderss["Content-Length"] = str(len(qdataa))
-    rep = requests.post(url=query_urll, headers=qheaderss, data=qdataa)
-    qcur_dis = re.findall('[:](\d+[.]\d*)', str(rep.content))
-    sum = 0
-    if len(qcur_dis) == 0:
-        sum = 0
-    else:
-        for i in range(len(qcur_dis)):
-            sum += float(qcur_dis[i])
-    w.label_3.setText(str(sum) + 'km')
-    w.progressBar.setValue(min(int(sum), 120))
-
-
-def qrun():
-    run.loop_run()
 
 
 if __name__ == '__main__':
@@ -213,8 +194,8 @@ if __name__ == '__main__':
     w = Ui_Form()
     w.setupUi(mainw)
     mainw.setFixedSize(mainw.width(), mainw.height())
-    w.query.clicked.connect(lambda: qqdata())
-    w.runrun.clicked.connect(lambda: qrun())
+    w.query.clicked.connect(lambda: run.query_data())
+    w.runrun.clicked.connect(lambda: run.loop_run())
     w.progressBar.setRange(0, 120)
     w.label_3.clear()
     mainw.show()
