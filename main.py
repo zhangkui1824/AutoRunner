@@ -151,6 +151,7 @@ class FakeData():
             for j in range(4):
                 for k in range(50000000):
                     pass
+        qqdata()
 
     def set_user(self, user_stuno='2019339900028'):
         self.studentno = "'studentno':'{}',".format(user_stuno)
