@@ -7,45 +7,7 @@ import re
 import sys  # 系统模块，获得命令行参数
 from PyQt5.QtWidgets import QApplication, \
     QMainWindow  # , QWidget, QLabel, QFormLayout  # 导入QAppliaction，QLabel以及QWidget
-from PyQt5 import QtCore, QtWidgets  # ,QtGui
 from new_run import Ui_Form
-
-"""
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(351, 137)
-        self.label = QtWidgets.QLabel(Form)
-        self.label.setGeometry(QtCore.QRect(40, 40, 31, 23))
-        self.label.setObjectName("label")
-        self.label_2 = QtWidgets.QLabel(Form)
-        self.label_2.setGeometry(QtCore.QRect(40, 70, 61, 23))
-        self.label_2.setObjectName("label_2")
-        self.label_3 = QtWidgets.QLabel(Form)
-        self.label_3.setGeometry(QtCore.QRect(120, 70, 111, 23))
-        self.label_3.setObjectName("label_3")
-        self.lineEdit = QtWidgets.QLineEdit(Form)
-        self.lineEdit.setGeometry(QtCore.QRect(80, 40, 113, 23))
-        self.lineEdit.setObjectName("lineEdit")
-        self.query = QtWidgets.QPushButton(Form)
-        self.query.setGeometry(QtCore.QRect(230, 40, 75, 23))
-        self.query.setObjectName("query")
-        self.runrun = QtWidgets.QPushButton(Form)
-        self.runrun.setGeometry(QtCore.QRect(230, 70, 75, 23))
-        self.runrun.setObjectName("runrun")
-
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
-
-    def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "run"))
-        self.label.setText(_translate("Form", "学号"))
-        self.label_2.setText(_translate("Form", "已跑公里数"))
-        self.label_3.setText(_translate("Form", "120km"))
-        self.query.setText(_translate("Form", "查询"))
-        self.runrun.setText(_translate("Form", "一键跑步"))
-"""
 
 """
     做一个循环，一次性跑完X天的，从9.21开始跑,跑到当天？
@@ -207,10 +169,7 @@ class FakeData():
         rep = requests.post(url=query_url, headers=self.headers, data=qdata)
         self.cur_dis = str(re.search('\d\d.\d', str(rep.content)).group())
         w.label_3.setText(self.cur_dis)
-        # print(self.cur_dis)
         return self.cur_dis
-    # "{"+student.format(user_stuno)+",'uid':''"
-    # self.studentno = "'studentno':'{}',".format('2019339900028')
 
 
 def qset_user(user_stuno='2019339900028'):
