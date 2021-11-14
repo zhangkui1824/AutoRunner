@@ -8,6 +8,7 @@ import sys  # 系统模块，获得命令行参数
 from PyQt5.QtWidgets import QApplication, \
     QMainWindow  # , QWidget, QLabel, QFormLayout  # 导入QAppliaction，QLabel以及QWidget
 from new_run import Ui_Form
+from pbar import Ui_ProBar
 
 """
     做一个循环，一次性跑完X天的，从9.21开始跑,跑到当天？
@@ -117,7 +118,7 @@ class FakeData():
 
     def makedata(self):
         self.str = '{' + self.begintime + self.endtime + self.uid + self.schoolno + self.distance + self.speed + self.studentno + self.atttype + self.eventno + self.newlocation + self.pointstatus + self.usetime + '}'
-        print(self.str)
+        # print(self.str)
 
     def compressdata(self):
         # 压缩字符串并设置头部的长度
@@ -133,25 +134,27 @@ class FakeData():
 
         # print(rep.content)
 
-    def loop_run(self, num=41):
+    def loop_run(self, num=40):
         # 一个人40次,从21号开始算
         # print(self.uid)
         nowertime = int(time.time())
-        self.set_user(w.lineEdit.text())
+        self.set_user(wmain.lineEdit.text())
+        pbarw.show()
         for i in range(0, num):
             if first_begintime + i * time_interval > nowertime:
                 print("你要跑明天的吗？")
                 return 0
+            aaaaaa = input("222")
             self.maketime(cur_begin=first_begintime + i * time_interval + random.randint(-2000, 2000))
             self.makegps()
             self.makedata()
             self.compressdata()
             self.post_data()
-            w.progressBar.setValue(int(3 * i))
+            wpbar.progressBar.setValue(int(3 * i))
+            app.processEvents()
             for j in range(4):
                 for k in range(50000000):
                     pass
-        qqdata()
 
     def set_user(self, user_stuno='2019339900028'):
         self.studentno = "'studentno':'{}',".format(user_stuno)
@@ -168,7 +171,7 @@ class FakeData():
             "Accept-Encoding": "gzip",
             "Content-Length": "{}"
         }
-        qdataa = gzip.compress(("{'studentno':'" + (w.lineEdit.text()) + "','uid':''}").encode("utf-8"),
+        qdataa = gzip.compress(("{'studentno':'" + (wmain.lineEdit.text()) + "','uid':''}").encode("utf-8"),
                                compresslevel=6)
         qheaderss["Content-Length"] = str(len(qdataa))
         rep = requests.post(url=query_url, headers=qheaderss, data=qdataa)
@@ -179,24 +182,31 @@ class FakeData():
         else:
             for i in range(len(qcur_dis)):
                 sum += float(qcur_dis[i])
-        w.label_3.setText(str(sum) + 'km')
-        w.progressBar.setValue(min(int(sum), 120))
+        wmain.label_3.setText(str(sum) + 'km')
+        wmain.progressBar1.setValue(min(int(sum), 120))
 
 
 def qset_user(user_stuno='2019339900028'):
-    run.studentno = "'studentno':'{}',".format(w.lineEdit.text())
+    run.studentno = "'studentno':'{}',".format(wmain.lineEdit.text())
 
 
 if __name__ == '__main__':
     run = FakeData()
     app = QApplication(sys.argv)
     mainw = QMainWindow()
-    w = Ui_Form()
-    w.setupUi(mainw)
+    wmain = Ui_Form()
+    wmain.setupUi(mainw)
+    wpbar = Ui_ProBar()
+    pbarw = QMainWindow()
+    wpbar.setupUi(pbarw)
     mainw.setFixedSize(mainw.width(), mainw.height())
-    w.query.clicked.connect(lambda: run.query_data())
-    w.runrun.clicked.connect(lambda: run.loop_run())
-    w.progressBar.setRange(0, 120)
-    w.label_3.clear()
+
+    wmain.lineEdit.setText("2019339900028")
+    wpbar.progressBar.setRange(0, 120)
+    wmain.progressBar1.setRange(0, 120)
+    wpbar.progressBar.setValue(0)
+    wmain.query.clicked.connect(lambda: run.query_data())
+    wmain.runrun.clicked.connect(lambda: run.loop_run())
+    wmain.label_3.clear()
     mainw.show()
     app.exec()
