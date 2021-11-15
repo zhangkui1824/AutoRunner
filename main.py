@@ -144,7 +144,6 @@ class FakeData():
             if first_begintime + i * time_interval > nowertime:
                 print("你要跑明天的吗？")
                 return 0
-            aaaaaa = input("222")
             self.maketime(cur_begin=first_begintime + i * time_interval + random.randint(-2000, 2000))
             self.makegps()
             self.makedata()
