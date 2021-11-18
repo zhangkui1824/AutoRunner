@@ -37,7 +37,6 @@ time_interval = 86400  # 24h浮动一点
 last_time = 900  # 持续时间15min浮动
 distance_val = 3000.0
 
-
 def depack(a):
     # 一开始爬取用，现在没用了
     b = base64.b64decode(a)
@@ -126,11 +125,12 @@ class FakeData():
         self.headers["Content-Length"] = str(len(self.data))
 
     def post_data(self):
-        print("start upload")
+        #print("start upload")
         try:
             rep = requests.post(url=url, headers=self.headers, data=self.data, timeout=1)
         except:
-            print("跑步失败")
+            #print("跑步失败")
+            pass
 
         # print(rep.content)
 
