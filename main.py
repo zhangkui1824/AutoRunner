@@ -7,8 +7,7 @@ import re
 import sys  # 系统模块，获得命令行参数
 from PyQt5.QtWidgets import QApplication, \
     QMainWindow  # , QWidget, QLabel, QFormLayout  # 导入QAppliaction，QLabel以及QWidget
-from new_run import Ui_Form
-from pbar import Ui_ProBar
+from last import Ui_Form0
 
 """
     做一个循环，一次性跑完X天的，从9.21开始跑,跑到当天？
@@ -33,6 +32,7 @@ from pbar import Ui_ProBar
 """
 url = "http://10.11.246.182:8029/DragonFlyServ/Api/webserver/uploadRunData"
 first_begintime = 1632221254  # 2021-09-21 18:47:34
+daytime = 69879  # 1632223480-1632153601 18:30
 time_interval = 86400  # 24h浮动一点
 last_time = 900  # 持续时间15min浮动
 distance_val = 3000.0
@@ -138,26 +138,31 @@ class FakeData():
         # 一个人40次,从21号开始算
         # print(self.uid)
         nowertime = int(time.time())
-        self.set_user(wmain.lineEdit.text())
-        pbarw.show()
+        self.set_user(w.stu_no.text())
+        time_str = time.strptime(w.stime.text(), "%Y/%m/%d")
+        time_stamp = int(time.mktime(time_str))
+        first_begintime = time_stamp + daytime
+        num = int(w.run_days.text())
+        if (num >= 90 or num < 0):
+            return 0
         for i in range(0, num):
             if first_begintime + i * time_interval > nowertime:
-                print("你要跑明天的吗？")
+                print("你要跑明天的吗？只跑了", i, "天的")
                 return 0
             self.maketime(cur_begin=first_begintime + i * time_interval + random.randint(-2000, 2000))
             self.makegps()
             self.makedata()
             self.compressdata()
             self.post_data()
-            wpbar.progressBar.setValue(int(3 * i))
+            # wpbar.progressBar.setValue(int(3 * i))
             app.processEvents()
             for j in range(4):
-                for k in range(50000000):
+                for k in range(5000000):
                     pass
 
     def set_user(self, user_stuno='2019339900028'):
         self.studentno = "'studentno':'{}',".format(user_stuno)
-        print(self.studentno)
+        # print(self.studentno)
 
     def query_data(self):
         query_url = 'http://10.11.246.182:8029/DragonFlyServ/Api/webserver/getRunDataSummary'
@@ -170,7 +175,7 @@ class FakeData():
             "Accept-Encoding": "gzip",
             "Content-Length": "{}"
         }
-        qdataa = gzip.compress(("{'studentno':'" + (wmain.lineEdit.text()) + "','uid':''}").encode("utf-8"),
+        qdataa = gzip.compress(("{'studentno':'" + (w.stu_no.text()) + "','uid':''}").encode("utf-8"),
                                compresslevel=6)
         qheaderss["Content-Length"] = str(len(qdataa))
         rep = requests.post(url=query_url, headers=qheaderss, data=qdataa)
@@ -181,31 +186,28 @@ class FakeData():
         else:
             for i in range(len(qcur_dis)):
                 sum += float(qcur_dis[i])
-        wmain.label_3.setText(str(sum) + 'km')
-        wmain.progressBar1.setValue(min(int(sum), 120))
+        w.dis.setText(str(sum) + 'km')
+        w.pbar.setValue(min(int(sum), 120))
+        app.processEvents()
 
 
 def qset_user(user_stuno='2019339900028'):
-    run.studentno = "'studentno':'{}',".format(wmain.lineEdit.text())
+    run.studentno = "'studentno':'{}',".format(w.stu_no.text())
 
 
 if __name__ == '__main__':
     run = FakeData()
     app = QApplication(sys.argv)
     mainw = QMainWindow()
-    wmain = Ui_Form()
-    wmain.setupUi(mainw)
-    wpbar = Ui_ProBar()
-    pbarw = QMainWindow()
-    wpbar.setupUi(pbarw)
-    mainw.setFixedSize(mainw.width(), mainw.height())
 
-    wmain.lineEdit.setText("2019339900028")
-    wpbar.progressBar.setRange(0, 120)
-    wmain.progressBar1.setRange(0, 120)
-    wpbar.progressBar.setValue(0)
-    wmain.query.clicked.connect(lambda: run.query_data())
-    wmain.runrun.clicked.connect(lambda: run.loop_run())
-    wmain.label_3.clear()
+    w = Ui_Form0()
+    w.setupUi(mainw)
+    mainw.setFixedSize(mainw.width(), mainw.height())
+    w.pbar.setRange(0, 120)
+    w.run_days.setRange(0, 90)
+    w.run_days.setValue(40)
+
+    w.query.clicked.connect(lambda: run.query_data())
+    w.runrun.clicked.connect(lambda: run.loop_run())
     mainw.show()
     app.exec()
