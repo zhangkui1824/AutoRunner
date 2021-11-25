@@ -155,7 +155,8 @@ class FakeData():
             self.compressdata()
             self.post_data()
             # wpbar.progressBar.setValue(int(3 * i))
-            app.processEvents()
+            self.query_data()
+            #app.processEvents()
             for j in range(4):
                 for k in range(5000000):
                     pass
@@ -175,19 +176,22 @@ class FakeData():
             "Accept-Encoding": "gzip",
             "Content-Length": "{}"
         }
-        qdataa = gzip.compress(("{'studentno':'" + (w.stu_no.text()) + "','uid':''}").encode("utf-8"),
+        qdataa = gzip.compress(("{'studentno':'" +str(w.stu_no.text())+ "','uid':''}").encode("utf-8"),
                                compresslevel=6)
         qheaderss["Content-Length"] = str(len(qdataa))
         rep = requests.post(url=query_url, headers=qheaderss, data=qdataa)
         qcur_dis = re.findall('[:](\d+[.]\d*)', str(rep.content))
+        #print(qcur_dis)
         sum = 0
         if len(qcur_dis) == 0:
             sum = 0
         else:
             for i in range(len(qcur_dis)):
                 sum += float(qcur_dis[i])
+
         w.dis.setText(str(sum) + 'km')
         w.pbar.setValue(min(int(sum), 120))
+        #print(sum)
         app.processEvents()
 
 
@@ -197,6 +201,7 @@ def qset_user(user_stuno='2019339900028'):
 
 if __name__ == '__main__':
     run = FakeData()
+
     app = QApplication(sys.argv)
     mainw = QMainWindow()
 
@@ -206,7 +211,7 @@ if __name__ == '__main__':
     w.pbar.setRange(0, 120)
     w.run_days.setRange(0, 90)
     w.run_days.setValue(40)
-
+    w.stu_no.setText("2019339900028")
     w.query.clicked.connect(lambda: run.query_data())
     w.runrun.clicked.connect(lambda: run.loop_run())
     mainw.show()
