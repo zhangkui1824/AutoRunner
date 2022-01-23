@@ -1,3 +1,4 @@
+# 仅供学习使用，个人擅自使用本程序造成的任何后果与本人无关  
 # AutoRunner
 ZSTU 120km  
 requests+re+pyqt  
