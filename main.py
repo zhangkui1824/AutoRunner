@@ -8,7 +8,7 @@ import sys  # 系统模块，获得命令行参数
 from PyQt5.QtWidgets import QApplication, \
     QMainWindow  # , QWidget, QLabel, QFormLayout  # 导入QAppliaction，QLabel以及QWidget
 from last import Ui_Form0
-
+import pandas as pd
 """
     做一个循环，一次性跑完X天的，从9.21开始跑,跑到当天？
 
@@ -31,11 +31,19 @@ from last import Ui_Form0
     4.POST
 """
 url = "http://10.11.246.182:8029/DragonFlyServ/Api/webserver/uploadRunData"
-first_begintime = 1632221254  # 2021-09-21 18:47:34
+"""
+first_begintime要自己改
+虽然包的时间不会检查，但还是要严谨嗷
+2022/03/10 21:05
+"""
+# first_begintime = 1632221254  # 2021-09-21 18:47:34
+first_begintime = 1646733586  # 2022-03-08 17:59:46 时间过得真快
 daytime = 69879  # 1632223480-1632153601 18:30
 time_interval = 86400  # 24h浮动一点
 last_time = 900  # 持续时间15min浮动
 distance_val = 3000.0
+df = pd.read_excel('./stu.xlsx', sheet_name='男生')
+
 
 def depack(a):
     # 一开始爬取用，现在没用了
@@ -83,11 +91,13 @@ class FakeData():
 
     def maketime(self, cur_begin=first_begintime):
         # 开始时间，持续时间，结束时间
-        self.rand_begintime = cur_begin + random.randint(-600, 600)  # 开始时间前后浮动十分钟
+        self.rand_begintime = cur_begin + \
+            random.randint(-600, 600)  # 开始时间前后浮动十分钟
         rand_last_time = last_time + random.randint(30, 300)  # 跑步时长增加半分钟到五分钟
         self.begintime = "'begintime':'{}',".format(self.rand_begintime)
         self.usetime = "'usetime':'{}.0'".format(rand_last_time)
-        self.endtime = "'endtime':'{}',".format(rand_last_time + self.rand_begintime)  # 结束时间是两者相加
+        self.endtime = "'endtime':'{}',".format(
+            rand_last_time + self.rand_begintime)  # 结束时间是两者相加
 
     def makegps(self):
         # 构造GPS点，由self.location的点随机浮动得到
@@ -108,7 +118,8 @@ class FakeData():
             randy = y + round(0.00001 * (random.randint(1, 100)), 10)
             randtime = float(self.rand_begintime + k)
             k = k + 1
-            rand_cur_speed = abs(cur_speed + round(random.uniform(-2.2, 3.3), 2))
+            rand_cur_speed = abs(
+                cur_speed + round(random.uniform(-2.2, 3.3), 2))
             cur_point_data = str(randx) + ',' + str(randy) + ';' + str(randtime) + ';null;null;' + str(
                 rand_cur_speed) + ';null@'
             self.rand_locations += cur_point_data
@@ -116,7 +127,9 @@ class FakeData():
         self.newlocation = "'location':'{}',".format(self.rand_locations)
 
     def makedata(self):
-        self.str = '{' + self.begintime + self.endtime + self.uid + self.schoolno + self.distance + self.speed + self.studentno + self.atttype + self.eventno + self.newlocation + self.pointstatus + self.usetime + '}'
+        self.str = '{' + self.begintime + self.endtime + self.uid + self.schoolno + self.distance + self.speed + \
+            self.studentno + self.atttype + self.eventno + \
+            self.newlocation + self.pointstatus + self.usetime + '}'
         # print(self.str)
 
     def compressdata(self):
@@ -127,9 +140,13 @@ class FakeData():
     def post_data(self):
         #print("start upload")
         try:
-            rep = requests.post(url=url, headers=self.headers, data=self.data, timeout=1)
-        except:
-            #print("跑步失败")
+            rep = requests.post(
+                url=url,
+                headers=self.headers,
+                data=self.data,
+                timeout=1)
+        except BaseException:
+            print("跑步失败")
             pass
 
         # print(rep.content)
@@ -143,23 +160,22 @@ class FakeData():
         time_stamp = int(time.mktime(time_str))
         first_begintime = time_stamp + daytime
         num = int(w.run_days.text())
-        if (num >= 90 or num < 0):
+        if (num >= 90 or num <= 0):
             return 0
         for i in range(0, num):
             if first_begintime + i * time_interval > nowertime:
                 print("你要跑明天的吗？只跑了", i, "天的")
                 return 0
-            self.maketime(cur_begin=first_begintime + i * time_interval + random.randint(-2000, 2000))
+            self.maketime(cur_begin=first_begintime + i *
+                          time_interval + random.randint(-2000, 2000))
             self.makegps()
             self.makedata()
             self.compressdata()
             self.post_data()
             # wpbar.progressBar.setValue(int(3 * i))
             self.query_data()
-            #app.processEvents()
-            for j in range(4):
-                for k in range(5000000):
-                    pass
+            # app.processEvents()
+            time.sleep(1)
 
     def set_user(self, user_stuno='2019339900028'):
         self.studentno = "'studentno':'{}',".format(user_stuno)
@@ -176,23 +192,43 @@ class FakeData():
             "Accept-Encoding": "gzip",
             "Content-Length": "{}"
         }
-        qdataa = gzip.compress(("{'studentno':'" +str(w.stu_no.text())+ "','uid':''}").encode("utf-8"),
+        qdataa = gzip.compress(("{'studentno':'" + str(w.stu_no.text()) + "','uid':''}").encode("utf-8"),
                                compresslevel=6)
         qheaderss["Content-Length"] = str(len(qdataa))
         rep = requests.post(url=query_url, headers=qheaderss, data=qdataa)
-        qcur_dis = re.findall('[:](\d+[.]\d*)', str(rep.content))
-        #print(qcur_dis)
-        sum = 0
+        qcur_dis = re.findall('[:](\\d+[.]\\d*)', str(rep.content))
+        # print(rep.text)
+        print(qcur_dis)
+        # print(type(qcur_dis[0])) str
+        sum = 0.0
         if len(qcur_dis) == 0:
-            sum = 0
+            sum = 0.0
         else:
             for i in range(len(qcur_dis)):
                 sum += float(qcur_dis[i])
-
+        # print(type(sum)) float
         w.dis.setText(str(sum) + 'km')
         w.pbar.setValue(min(int(sum), 120))
-        #print(sum)
+        # print(sum)
         app.processEvents()
+        return sum
+
+    def run_toghter(self):
+        nrows = df.shape[0]
+        for i in range(nrows):
+            w.stu_no.setText(str(df.iloc[i, 0]))
+            self.loop_run()
+            time.sleep(0.2)
+
+    def query_toghter(self):
+        nrows = df.shape[0]
+        for i in range(nrows):
+            w.stu_no.setText(str(df.iloc[i, 0]))
+            diss = run.query_data()
+            # df.iloc[i,1]=str(df.iloc[i,1])
+            df.iloc[i, 2] = diss
+            time.sleep(0.2)
+        df.to_excel('120km.xlsx', sheet_name='男生')
 
 
 def qset_user(user_stuno='2019339900028'):
@@ -201,6 +237,11 @@ def qset_user(user_stuno='2019339900028'):
 
 if __name__ == '__main__':
     run = FakeData()
+
+    df = df.iloc[:, [0, 1, 2]]  # 学号，姓名，距离
+    nrows = df.shape[0]
+    ncols = df.columns.size
+    print(df.iloc[:, 0])
 
     app = QApplication(sys.argv)
     mainw = QMainWindow()
@@ -214,5 +255,10 @@ if __name__ == '__main__':
     w.stu_no.setText("2019339900028")
     w.query.clicked.connect(lambda: run.query_data())
     w.runrun.clicked.connect(lambda: run.loop_run())
+
+    run.query_toghter()
+    check=input("输入1帮全班男生跑步")
+    if check==1 and 1>2:
+        run.run_toghter()
     mainw.show()
     app.exec()
